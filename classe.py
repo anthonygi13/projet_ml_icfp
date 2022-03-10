@@ -29,10 +29,10 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
     def forward(self, Y):
         """
         :param Y: sequence (y1, ..., yT)
-        :return: alpha, shape (N, T), alpha_i_t being the proba of seeing (y1, ..., yt)
+        :return: alpha, shape (M, T), alpha_i_t being the proba of seeing (y1, ..., yt)
          and being at state i at time t
         """
-        alpha = np.zeros((self.N, Y.shape[0]))
+        alpha = np.zeros((self.M, Y.shape[0]))
         alpha[:, 0] = np.einsum('i,i->i', self.pi, self.B[:, Y[0]])
         for t in range(1, Y.shape[0]):
             alpha[:, t] = np.einsum('i,i->i', self.B[:, Y[t]], np.einsum('j,ji->i', alpha[:, t-1], self.A))
@@ -41,11 +41,11 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
     def backward(self, Y):
         """
         :param Y: sequence (y1, ..., yT)
-        :return: beta, shape (N, T), beta_i_t being the proba of seeing (y(t+1), ..., yT)
+        :return: beta, shape (M, T), beta_i_t being the proba of seeing (y(t+1), ..., yT)
          knowing that we are in state i at time t
         """
         T = Y.shape[0]
-        beta = np.zeros((self.N, Y.shape[0]))
+        beta = np.zeros((self.M, Y.shape[0]))
         beta[:, T-1] = 1
         for t in range(T-2, -1, -1):
             beta[:, t] = np.einsum('j,ij,j->i', beta[:, t+1], self.A, self.B[:, Y[t+1]])
@@ -65,7 +65,7 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
         # compute gamma
         gamma = np.zeros((N, T))
 
-        for t in range(T):
+        for t in range(T - 1):
             inter = 0
 
             # compute the intermediate component
@@ -74,12 +74,16 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
 
             for i in range(N):
                 gamma[i, t] = alpha[i, t] * beta[i, t] / inter
+                
 
         # Compute xsi
 
-        xsi = np.zeros((N, N, T-1))
+        xsi = np.zeros((N, N, T))
+
         for t in range(T - 1):
+
             inter = 0
+
             for k in range(N):
                 for w in range(N):
                     inter += alpha[k, t] * self.A[k, w] * beta[w, t + 1] * self.B[w, Y[t + 1]]
@@ -94,16 +98,17 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
 
         for i in range(N): #Update transition matrix
             for j in range(N):
-                self.A[i, j] = np.sum(xsi, axis=-1)[i, j] / np.sum(gamma[i,:-1])
-
+                self.A[i, j] = np.sum(xsi[:,:,:-1], axis=-1)[i, j] / np.sum(gamma[i,:-1], -1)
+                
+        
         for i in range(N): #Update symbol generation
             for j in range(M):
                 inter1 = 0
                 inter2 = 0
-                for t in range(T):
-                    if (Y[t]==j):
-                        inter1 += gamma[i,t]
-                    inter2 += gamma[i,t]
+                for t in range(T-1):
+                    if(Y[t]==j):
+                        inter1+=gamma[i,t]
+                    inter2+=gamma[i,t]
                 
                 self.B[i,j]= inter1 / inter2
 
