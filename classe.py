@@ -150,11 +150,8 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
                     inter2+=gamma[i,t]
                 
                 self.B[i,j]= inter1 / inter2
+         
                 
-    def Baum_welch_sequence(self, Y):  # Given a sample Y = (y1,....yL), what are the new parameters ?
-
-        N = self.N  # Oh c'est tellement plus simple que de remettre self.N a chaque fois ...
-        M = self.M
     def BW_bis(self, Y):
         alpha, beta = self.forward(Y), self.backward(Y)
         gamma = alpha*beta
@@ -167,13 +164,17 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
         self.B = (np.einsum("jt,it->ij", mask, gamma).T/np.sum(gamma, axis=-1)).T
 
         T = Y.shape[0]
-        R = Y.shape[1]# number of sequences length
+        R = Y.shape[1]# number of sequences length     
+            
+         
+    def Baum_welch_sequence(self, Y):  # Given a sample Y = (y1,....yL), what are the new parameters ?
 
+        N = self.N  # Oh c'est tellement plus simple que de remettre self.N a chaque fois ...
+        M = self.M
         
-
-        
-        
-
+        T=Y.shape[0]
+        R=Y.shape[1]
+    
         ##UPDATE
 
         # compute gamma
@@ -233,13 +234,13 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
 
 
 hmm = HMM(2, 2)
-hmm.pi = np.array([0.5, 0.5])
+hmm.pi = np.array([0.4, 0.6])
 
-hmm.A = np.array([[0.6, 0.4], [0.3, 0.7]])
-hmm.B = np.array([[0.4, 0.6], [0.25, 0.75]])
+hmm.A = np.array([[0.8, 0.2], [0.2, 0.8]])
+hmm.B = np.array([[0.9, 0.1], [0.6, 0.4]])
 
 
-T_0 = 100 #number of coin toss
+T_0 = 300 #number of coin toss
 R_0 = 10000 #number of trials
 
 Y_seq = np.zeros((T_0,R_0),dtype=int)
@@ -254,4 +255,3 @@ hmm.Baum_welch_sequence(Y_seq)
 print("pi", hmm.pi)
 print("A", hmm.A)
 print("B", hmm.B)
-print(np.sum(hmm.B, axis=1))
