@@ -74,6 +74,7 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
 
             for i in range(N - 1):
                 gamma[i, t] = alpha[i, t] * beta[i, t] / inter
+                
 
         # Compute xsi
 
@@ -97,7 +98,7 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
 
         for i in range(N - 1): #Update transition matrix
             for j in range(N - 1):
-                self.A[i, j] = np.sum(xsi, axis=-1)[i, j] / np.sum(gamma[i], -1)
+                self.A[i, j] = np.sum(xsi[:,:,:-1], axis=-1)[i, j] / np.sum(gamma[i,:-1], -1)
                 
         
         for i in range(N-1): #Update symbol generation
