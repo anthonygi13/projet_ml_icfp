@@ -115,7 +115,6 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
             for i in range(N):
                 gamma[i, t] = alpha[i, t] * beta[i, t] / inter
 
-        print("gamma", gamma)
         # Compute xsi
 
         xsi = np.zeros((N, N, T-1))
@@ -134,7 +133,6 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
                     xsi[i, j, t] = alpha[i, t] * self.A[i, j] * beta[j, t + 1] * self.B[j, Y[t + 1]] / inter
 
                     # UPDATE THE PARAMETER
-        print("xsi", xsi)
         self.pi[:] = gamma[:, 0] #update pi
 
         for i in range(N): #Update transition matrix
@@ -161,10 +159,8 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
         alpha, beta = self.forward(Y), self.backward(Y)
         gamma = alpha*beta
         gamma /= np.sum(gamma, axis=0)
-        print("gamma", gamma)
         xsi = np.einsum("it,ij,jt,jt->ijt", alpha[:, :-1], self.A, beta[:, 1:], self.B[:, Y[1:]])
         xsi /= np.sum(xsi, axis=(0, 1))
-        print("xsi", xsi)
         self.pi = np.array(gamma[:, 0], copy=True)
         self.A = (np.sum(xsi, axis=-1).T/np.sum(gamma[:, :-1], axis=-1)).T
         mask = np.tile(np.arange(self.M), (Y.shape[0], 1)).T == np.tile(Y, (self.M, 1))

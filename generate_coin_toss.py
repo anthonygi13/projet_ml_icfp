@@ -2,6 +2,7 @@ import numpy as np
 
 def CoinToss(T):
     Y = np.zeros(T, dtype=int)
+    X = np.zeros(T, dtype=int)
     p = 0.9  # ☻proba of biased coin
     pi = np.array([0.8, 0.2])  # proba of initial state
     A = np.array([[0.8, 0.2], [0.1, 0.9]])
@@ -22,11 +23,12 @@ def CoinToss(T):
 
     for t in range(1, T):
         # Transition
-        if (np.random.rand() < A[X[t - 1], 1 - X[t - 1]]):
+        if np.random.rand() < A[X[t - 1], 1 - X[t - 1]]:
             X[t] = 1 - X[t - 1]
-            
-        #Symbol emission
-        if (np.random.rand() < B[X[t],0]):
+        else:
+            X[t] = X[t - 1]
+        # Emission
+        if np.random.rand() < B[X[t], 0]:
             Y[t] = 0
         else:
             Y[t] = 1
