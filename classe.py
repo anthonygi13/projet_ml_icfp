@@ -29,10 +29,10 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
     def forward(self, Y):
         """
         :param Y: sequence (y1, ..., yT)
-        :return: alpha, shape (M, T), alpha_i_t being the proba of seeing (y1, ..., yt)
+        :return: alpha, shape (N, T), alpha_i_t being the proba of seeing (y1, ..., yt)
          and being at state i at time t
         """
-        alpha = np.zeros((self.M, Y.shape[0]))
+        alpha = np.zeros((self.N, Y.shape[0]))
         alpha[:, 0] = np.einsum('i,i->i', self.pi, self.B[:, Y[0]])
         for t in range(1, Y.shape[0]):
             alpha[:, t] = np.einsum('i,i->i', self.B[:, Y[t]], np.einsum('j,ji->i', alpha[:, t-1], self.A))
@@ -41,11 +41,11 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
     def backward(self, Y):
         """
         :param Y: sequence (y1, ..., yT)
-        :return: beta, shape (M, T), beta_i_t being the proba of seeing (y(t+1), ..., yT)
+        :return: beta, shape (N, T), beta_i_t being the proba of seeing (y(t+1), ..., yT)
          knowing that we are in state i at time t
         """
         T = Y.shape[0]
-        beta = np.zeros((self.M, Y.shape[0]))
+        beta = np.zeros((self.N, Y.shape[0]))
         beta[:, T-1] = 1
         for t in range(T-2, -1, -1):
             beta[:, t] = np.einsum('j,ij,j->i', beta[:, t+1], self.A, self.B[:, Y[t+1]])
@@ -74,8 +74,8 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
 
             for i in range(N):
                 gamma[i, t] = alpha[i, t] * beta[i, t] / inter
-                
 
+        print("gamma", gamma)
         # Compute xsi
 
         xsi = np.zeros((N, N, T-1))
@@ -94,7 +94,7 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
                     xsi[i, j, t] = alpha[i, t] * self.A[i, j] * beta[j, t + 1] * self.B[j, Y[t + 1]] / inter
 
                     # UPDATE THE PARAMETER
-
+        print("xsi", xsi)
         self.pi[:] = gamma[:, 0] #update pi
 
         for i in range(N): #Update transition matrix
@@ -113,22 +113,40 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
                 
                 self.B[i,j]= inter1 / inter2
 
+    def BW_bis(self, Y):
+        alpha, beta = self.forward(Y), self.backward(Y)
+        gamma = alpha*beta
+        gamma /= np.sum(gamma, axis=0)
+        print("gamma", gamma)
+        xsi = np.einsum("it,ij,jt,jt->ijt", alpha[:, :-1], self.A, beta[:, 1:], self.B[:, Y[1:]])
+        xsi /= np.sum(xsi, axis=(0, 1))
+        print("xsi", xsi)
+        self.pi = np.array(gamma[:, 0], copy=True)
+        self.A = (np.sum(xsi, axis=-1).T/np.sum(gamma[:, :-1], axis=-1)).T
+        mask = np.tile(np.arange(self.M), (Y.shape[0], 1)).T == np.tile(Y, (self.M, 1))
+        self.B = (np.einsum("jt,it->ij", mask, gamma).T/np.sum(gamma, axis=-1)).T
 
+X, Y = CoinToss(10)
+print("bw corentin")
 hmm = HMM(2, 2)
 hmm.pi = np.array([0.2, 0.8])
-
 hmm.A = np.array([[0.2, 0.9], [0.8, 0.1]])
 hmm.init_parameter()
-print(hmm.A)
 hmm.B = np.array([[0.2, 0.9], [0.8, 0.1]])
-print
-
-
-X, Y = CoinToss(20)
-print(X)
 hmm.Baum_welch(Y)
-
 print("pi", hmm.pi)
 print("A", hmm.A)
 print("B", hmm.B)
+print(np.sum(hmm.B, axis=1))
 
+print("bw bis")
+hmm = HMM(2, 2)
+hmm.pi = np.array([0.2, 0.8])
+hmm.A = np.array([[0.2, 0.9], [0.8, 0.1]])
+hmm.init_parameter()
+hmm.B = np.array([[0.2, 0.9], [0.8, 0.1]])
+hmm.BW_bis(Y)
+print("pi", hmm.pi)
+print("A", hmm.A)
+print("B", hmm.B)
+print(np.sum(hmm.B, axis=1))
