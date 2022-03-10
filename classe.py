@@ -56,7 +56,7 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
         N = self.N  # Oh c'est tellement plus simple que de remettre self.N a chaque fois ...
         M = self.M
 
-        T = Y.shape  # Data length
+        T = Y.shape[0]  # Data length
 
         alpha, beta = self.forward(Y), self.backward(Y)
 
@@ -85,11 +85,11 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
 
             for k in range(N - 1):
                 for w in range(N - 1):
-                    inter += alpha[k, t] * self.A[k, w] * beta[w, t + 1] * self.B[w, Y(t + 1)]
+                    inter += alpha[k, t] * self.A[k, w] * beta[w, t + 1] * self.B[w, Y[t + 1]]
 
             for i in range(N - 1):
                 for j in range(N - 1):
-                    xsi[i, j, t] = alpha[i, t] * self.A[i, j] * beta[j, t + 1] * self.B[j, Y(t + 1)] / inter
+                    xsi[i, j, t] = alpha[i, t] * self.A[i, j] * beta[j, t + 1] * self.B[j, Y[t + 1]] / inter
 
                     # UPDATE THE PARAMETER
 
@@ -108,3 +108,14 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
                         inter+=gamma[i,t]
                 
                 self.B[i,j]=inter / np.sum(gamma[i],-1)
+
+
+hmm = HMM(2, 2)
+hmm.pi = np.array([0.2, 0.8])
+hmm.A = np.array([[0.2, 0.9], [0.8, 0.1]])
+hmm.B = np.array([[0.2, 0.9], [0.8, 0.1]])
+
+X, Y = CoinToss(10)
+hmm.Baum_welch(Y)
+
+print(hmm.pi, hmm.A, hmm.B)

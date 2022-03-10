@@ -1,7 +1,7 @@
 import numpy as np
 
 def CoinToss(T):
-    Y = np.zeros(T)
+    Y = np.zeros(T, dtype=int)
     p = 0.2  # ☻proba of biased coin
     pi = np.array([0.8, 0.2])  # proba of initial state
     A = np.array([[0.5, 0.5], [0.5, 0.5]])
