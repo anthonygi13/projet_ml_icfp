@@ -46,9 +46,9 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
         """
         T = Y.shape[0]
         beta = np.zeros((self.M, Y.shape[0]))
-        beta[:, T-1] = np.einsum('i,i->i', self.pi, self.B[:, Y[0]])
-        for t in range(Y.shape[0]-2, -1, -1):
-            beta[:, t] = np.einsum('j,ij,j->i', beta[:, Y[t+1]], self.A, self.B[:, Y[t+1]])
+        beta[:, T-1] = 1
+        for t in range(T-2, -1, -1):
+            beta[:, t] = np.einsum('j,ij,j->i', beta[:, t+1], self.A, self.B[:, Y[t+1]])
         return beta
 
     def Baum_welch(self, Y):  # Given a sample Y = (y1,....yL), what are the new parameters ?
@@ -65,6 +65,8 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
         # compute gamma
         gamma = np.zeros((N, T))
 
+        print(alpha)
+        print(beta)
         for t in range(T - 1):
             inter = 0
 
@@ -90,6 +92,7 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
 
             for i in range(N - 1):
                 for j in range(N - 1):
+                    print(inter)
                     xsi[i, j, t] = alpha[i, t] * self.A[i, j] * beta[j, t + 1] * self.B[j, Y[t + 1]] / inter
 
                     # UPDATE THE PARAMETER
