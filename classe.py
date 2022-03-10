@@ -50,16 +50,19 @@ print(CT[1])
 
 class HMM:  # Hidden markov chain with unidimensional symbol with discrete distribution
 
-    def __init__(self, M, N):
+    def __init__(self, M, N, pi=None, A=None, B=None):
 
         ##The fixed things
         self.M = M  # Number of symbols
         self.N = N  # Number of hidden states
 
         ##The parameters to optimize
-        self.pi = np.zeros(N)  # Initial state distribution
-        self.A = np.zeros((N, N))  # Transition matrix
-        self.B = np.zeros((N, M))  # Symbol generation
+        if pi is None:
+            self.pi = np.zeros(N)  # Initial state distribution
+        if A is None:
+            self.A = np.zeros((N, N))  # Transition matrix
+        if B is None:
+            self.B = np.zeros((N, M))  # Symbol generation
 
     def init_parameter(self):  # Take uniform everything as initial parameters
 
@@ -102,7 +105,7 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
 
         T = Y.shape  # Data length
 
-        alpha, beta = self.FW()
+        alpha, beta = self.forward(Y), self.backward(Y)
 
         ##UPDATE
 
