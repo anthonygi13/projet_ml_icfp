@@ -5,13 +5,13 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
     def __init__(self, M, N):
 
         ##The fixed things
-        self.M = M  # Number of hidden states
-        self.N = N  # Number of symbols
+        self.M = M  # Number of symbols
+        self.N = N  # Number of hidden states
 
         ##The parameters to optimize
         self.pi = np.zeros(N)  # Initial state distribution
         self.A = np.zeros((N, N))  # Transition matrix
-        self.B = np.zeros((M, N))  # Symbol generation
+        self.B = np.zeros((N, M))  # Symbol generation
 
     def init_parameter(self):  # Take uniform everything as initial parameters
 
@@ -20,7 +20,7 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
 
         self.pi = 1 / N * np.ones(N)  # Take the uniform distribution
         self.A = 1 / N * np.ones((N, N))
-        self.B = 1 / M * np.ones((M, N))
+        self.B = 1 / M * np.ones((N, M))
 
     def forward(self, Y):
         """
@@ -28,7 +28,11 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
         :return: alpha, shape (M, T), alpha_i_t being the proba of seeing (y1, ..., yt)
          and being at state i at time t
         """
-        pass
+        alpha = np.zeros((self.M, Y.shape[0]))
+        alpha[:, 0] = np.einsum('i,i->i', self.pi, self.B[:, Y[0]])
+        for t in range(1, Y.shape[0]):
+            alpha[:, t] = np.einsum('i,i->i', self.B[:, Y[t]], np.einsum('j,ji->i', alpha[:, t-1], self.A))
+        return alpha
 
     def backward(self, Y):
         """
@@ -36,7 +40,12 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
         :return: beta, shape (M, T), beta_i_t being the proba of seeing (y(t+1), ..., yT)
          knowing that we are in state i at time t
         """
-        pass
+        T = Y.shape[0]
+        beta = np.zeros((self.M, Y.shape[0]))
+        beta[:, T-1] = np.einsum('i,i->i', self.pi, self.B[:, Y[0]])
+        for t in range(Y.shape[0]-2, -1, -1):
+            beta[:, t] = np.einsum('j,ij,j->i', beta[:, Y[t+1]], self.A, self.B[:, Y[t+1]])
+        return beta
 
     def Baum_welch(self, Y):  # Given a sample Y = (y1,....yL), what are the new parameters ?
 
