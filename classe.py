@@ -72,19 +72,28 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
 
             for k in range(N - 1):
                 for w in range(N - 1):
-                    inter += alpha[k, t] * self.A[k, w] * beta[w, t + 1] * B[w, Y(t + 1)]
+                    inter += alpha[k, t] * self.A[k, w] * beta[w, t + 1] * self.B[w, Y(t + 1)]
 
             for i in range(N - 1):
                 for j in range(N - 1):
-                    xsi[i, j, t] = alpha[i, t] * self.A[i, j] * beta[j, t + 1] * B[j, Y(t + 1)] / inter
+                    xsi[i, j, t] = alpha[i, t] * self.A[i, j] * beta[j, t + 1] * self.B[j, Y(t + 1)] / inter
 
                     # UPDATE THE PARAMETER
 
-        self.pi[:] = gamma[:, 1]
+        self.pi[:] = gamma[:, 1] #update pi
 
-        for i in range(N - 1):
+        for i in range(N - 1): #Update transition matrix
             for j in range(N - 1):
                 self.A[i, j] = np.sum(xsi, axis=-1)[i, j] / np.sum(gamma[i], -1)
                 
+        
+        for i in range(N-1): #Update symbol generation
+            for j in range(M-1):
+                inter = 0
+                for t in range(T-1):
+                    if(Y[t]==j):
+                        inter+=gamma[i,t]
                 
-        "SALUT"        
+                self.B[i,j]=inter / np.sum(gamma[i],-1)
+                
+                
