@@ -71,10 +71,10 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
             inter = 0
 
             # compute the intermediate component
-            for j in range(N - 1):
+            for j in range(N):
                 inter += alpha[j, t] * beta[j, t]
 
-            for i in range(N - 1):
+            for i in range(N):
                 gamma[i, t] = alpha[i, t] * beta[i, t] / inter
                 
 
@@ -86,40 +86,48 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
 
             inter = 0
 
-            for k in range(N - 1):
-                for w in range(N - 1):
+            for k in range(N):
+                for w in range(N):
                     inter += alpha[k, t] * self.A[k, w] * beta[w, t + 1] * self.B[w, Y[t + 1]]
 
-            for i in range(N - 1):
-                for j in range(N - 1):
+            for i in range(N):
+                for j in range(N):
                     print(inter)
                     xsi[i, j, t] = alpha[i, t] * self.A[i, j] * beta[j, t + 1] * self.B[j, Y[t + 1]] / inter
 
                     # UPDATE THE PARAMETER
 
-        self.pi[:] = gamma[:, 1] #update pi
+        self.pi[:] = gamma[:, 0] #update pi
 
-        for i in range(N - 1): #Update transition matrix
-            for j in range(N - 1):
+        for i in range(N): #Update transition matrix
+            for j in range(N):
                 self.A[i, j] = np.sum(xsi[:,:,:-1], axis=-1)[i, j] / np.sum(gamma[i,:-1], -1)
                 
         
-        for i in range(N-1): #Update symbol generation
-            for j in range(M-1):
-                inter = 0
+        for i in range(N): #Update symbol generation
+            for j in range(M):
+                inter1 = 0
+                inter2 = 0
                 for t in range(T-1):
                     if(Y[t]==j):
-                        inter+=gamma[i,t]
+                        inter1+=gamma[i,t]
+                    inter2+=gamma[i,t]
                 
-                self.B[i,j]=inter / np.sum(gamma[i],-1)
+                self.B[i,j]= inter1 / inter2
 
 
 hmm = HMM(2, 2)
 hmm.pi = np.array([0.2, 0.8])
+
 hmm.A = np.array([[0.2, 0.9], [0.8, 0.1]])
+
 hmm.B = np.array([[0.2, 0.9], [0.8, 0.1]])
 
-X, Y = CoinToss(10)
+X, Y = CoinToss(20)
 hmm.Baum_welch(Y)
-
-print(hmm.pi, hmm.A, hmm.B)
+hmm.Baum_welch(Y)
+print(hmm.pi)
+print("________________________________")
+print(hmm.A)
+print("________________________________")
+print(hmm.B)
