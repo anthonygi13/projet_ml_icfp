@@ -65,7 +65,7 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
         # compute gamma
         gamma = np.zeros((N, T))
 
-        for t in range(T - 1):
+        for t in range(T):
             inter = 0
 
             # compute the intermediate component
@@ -78,9 +78,9 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
 
         # Compute xsi
 
-        xsi = np.zeros((N, N, T))
+        xsi = np.zeros((N, N, T-1))
 
-        for t in range(T - 1):
+        for t in range(T-1):
 
             inter = 0
 
@@ -99,14 +99,14 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
 
         for i in range(N): #Update transition matrix
             for j in range(N):
-                self.A[i, j] = np.sum(xsi[:,:,:-1], axis=-1)[i, j] / np.sum(gamma[i,:-1], -1)
+                self.A[i, j] = np.sum(xsi, axis=-1)[i, j] / np.sum(gamma[i,:-1], -1)
                 
         
         for i in range(N): #Update symbol generation
             for j in range(M):
                 inter1 = 0
                 inter2 = 0
-                for t in range(T-1):
+                for t in range(T):
                     if(Y[t]==j):
                         inter1+=gamma[i,t]
                     inter2+=gamma[i,t]
