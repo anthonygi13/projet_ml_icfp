@@ -85,3 +85,6 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
         for i in range(N - 1):
             for j in range(N - 1):
                 self.A[i, j] = np.sum(xsi, axis=-1)[i, j] / np.sum(gamma[i], -1)
+                
+                
+        "SALUT"        
