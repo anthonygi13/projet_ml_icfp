@@ -5,7 +5,7 @@ def CoinToss(T):
     p = 0.2  # ☻proba of biased coin
     pi = np.array([0.8, 0.2])  # proba of initial state
     A = np.array([[0.5, 0.5], [0.5, 0.5]])
-    B = np.array([[p, 0.5], [1 - p, 0.5]])
+    B = np.array([[p, 0.8], [1 - p, 0.2]])
 
     X = np.zeros(T)
 
