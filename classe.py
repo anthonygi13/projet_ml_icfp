@@ -65,8 +65,6 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
         # compute gamma
         gamma = np.zeros((N, T))
 
-        print(alpha)
-        print(beta)
         for t in range(T - 1):
             inter = 0
 
@@ -92,7 +90,6 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
 
             for i in range(N):
                 for j in range(N):
-                    print(inter)
                     xsi[i, j, t] = alpha[i, t] * self.A[i, j] * beta[j, t + 1] * self.B[j, Y[t + 1]] / inter
 
                     # UPDATE THE PARAMETER
@@ -124,10 +121,9 @@ hmm.A = np.array([[0.2, 0.9], [0.8, 0.1]])
 hmm.B = np.array([[0.2, 0.9], [0.8, 0.1]])
 
 X, Y = CoinToss(20)
+print(X)
 hmm.Baum_welch(Y)
-hmm.Baum_welch(Y)
-print(hmm.pi)
-print("________________________________")
-print(hmm.A)
-print("________________________________")
-print(hmm.B)
+
+print("pi", hmm.pi)
+print("A", hmm.A)
+print("B", hmm.B)
