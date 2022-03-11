@@ -32,11 +32,32 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
         self.A = np.array([[p1, 1-p1], [p2, 1-p2]])
         self.B = np.array([[p3, 1-p3], [p4, 1-p4]])
         
-    def Viterbi(self,y): #find the most probable of hidden sequence given the symbol sequence
-    
-        
-        return 0
-        
+
+     
+    def viterbi(self,y): #from https://www.delftstack.com/fr/howto/python/viterbi-algorithm-python/ 
+         
+        K = self.N 
+        A=self.A 
+        B=self.B 
+        initial_probs = self.pi 
+        T = len(Y) 
+        T1 = np.empty((K, T), 'd') 
+        T2 = np.empty((K, T), 'B') 
+        T1[:, 0] = initial_probs * B[:, y[0]] 
+        T2[:, 0] = 0 
+         
+        for i in range(1, T): 
+            T1[:, i] = np.max(T1[:, i - 1] * A.T * B[np.newaxis, :, y[i]].T, 1) 
+            T2[:, i] = np.argmax(T1[:, i - 1] * A.T, 1) 
+     
+        x = np.empty(T, 'B') 
+        x[-1] = np.argmax(T1[:, T - 1]) 
+         
+        for i in reversed(range(1, T)): 
+            x[i - 1] = T2[x[i], i] 
+     
+        return x, T1, T2 
+ 
     def backward_bis(self,Y):
         
         N = self.N  # Oh c'est tellement plus simple que de remettre self.N a chaque fois ...
