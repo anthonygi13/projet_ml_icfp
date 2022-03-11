@@ -22,10 +22,16 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
 
         N = self.N  # Oh c'est tellement plus simple que de remettre self.N a chaque fois ...
         M = self.M
-
-        self.pi = 1 / N * np.ones(N)  # Take the uniform distribution
-        self.A = 1 / N * np.ones((N, N))
-        self.B = 1 / M * np.ones((N, M))
+        
+        p = np.random.rand()
+        self.pi = np.array([p,1-p])  # Take the uniform distribution
+        p1 = np.random.rand()
+        p2 =  np.random.rand()
+        p3 =  np.random.rand()
+        p4 =  np.random.rand()
+        self.A = np.array([[p1, 1-p1], [p2, 1-p2]])
+        self.B = np.array([[p3, 1-p3], [p4, 1-p4]])
+        
 
     def backward_bis(self,Y):
         
@@ -176,8 +182,6 @@ hmm.B = np.array([[0.3, 0.7], [0.7, 0.3]])
 T_0 = 100 #number of coin toss
 R_0 = 300 #number of trials
 
-T_0 = 300  # number of coin toss
-R_0 = 100  # number of trials
 
 Y_seq = np.zeros((T_0, R_0), dtype=int)
 
@@ -191,7 +195,7 @@ for Y in Y_seq.T:
     logv += np.log(hmm.probability(Y))
 logvs += [logv]
 
-for i in range(140):
+for i in range(50):
     hmm.Baum_welch_sequence(Y_seq)
     logv = 0
     for Y in Y_seq.T:
