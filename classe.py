@@ -32,7 +32,11 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
         self.A = np.array([[p1, 1-p1], [p2, 1-p2]])
         self.B = np.array([[p3, 1-p3], [p4, 1-p4]])
         
-
+    def Viterbi(self,y): #find the most probable of hidden sequence given the symbol sequence
+    
+        
+        return 0
+        
     def backward_bis(self,Y):
         
         N = self.N  # Oh c'est tellement plus simple que de remettre self.N a chaque fois ...
@@ -197,6 +201,11 @@ hmm.pi = np.array([0.4, 0.6])
 hmm.A = np.array([[0.3, 0.7], [0.3, 0.7]])
 hmm.B = np.array([[0.3, 0.7], [0.7, 0.3]])
 
+
+print("pi", hmm.pi)
+print("A", hmm.A)
+print("B", hmm.B)
+print("____________")
 T_0 = 100 #number of coin toss
 R_0 = 300 #number of trials
 
