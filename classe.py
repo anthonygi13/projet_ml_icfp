@@ -187,18 +187,18 @@ for r in range(R_0):
 
 logvs = []
 logv = 0
-for Y in Y_seq:
+for Y in Y_seq.T:
     logv += np.log(hmm.probability(Y))
 logvs += [logv]
 
-for i in range(100):
+for i in range(140):
     hmm.Baum_welch_sequence(Y_seq)
     logv = 0
-    for Y in Y_seq:
+    for Y in Y_seq.T:
         logv += np.log(hmm.probability(Y))
     logvs += [logv]
 
-plt.plot(np.arange(len(logvs)), logvs)
+plt.scatter(np.arange(len(logvs)), logvs)
 plt.show()
 
 print("pi", hmm.pi)
