@@ -3,9 +3,9 @@ import numpy as np
 def CoinToss(T):
     Y = np.zeros(T, dtype=int)
     X = np.zeros(T, dtype=int)
-    p = 0.9  # ☻proba of biased coin
-    pi = np.array([0.8, 0.2])  # proba of initial state
-    A = np.array([[0.8, 0.2], [0.1, 0.9]])
+    p = 0.3  # ☻proba of biased coin
+    pi = np.array([0.3, 0.7])  # proba of initial state
+    A = np.array([[0.6, 0.4], [0.1, 0.9]])
     B = np.array([[p, 1-p], [0.5, 0.5]])
 
 

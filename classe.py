@@ -169,7 +169,10 @@ hmm.pi = np.array([0.4, 0.6])
 
 hmm.A = np.array([[0.8, 0.2], [0.2, 0.8]])
 hmm.B = np.array([[0.9, 0.1], [0.6, 0.4]])
+hmm.init_parameter()
 
+T_0 = 100 #number of coin toss
+R_0 = 300 #number of trials
 
 T_0 = 300  # number of coin toss
 R_0 = 10000  # number of trials
@@ -181,7 +184,8 @@ for r in range(R_0):
     Y_seq[:, r] = Y
 
 
-hmm.Baum_welch_sequence(Y_seq)
+for i in range(100):
+    hmm.Baum_welch_sequence(Y_seq)
 
 print("pi", hmm.pi)
 print("A", hmm.A)
