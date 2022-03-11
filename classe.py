@@ -105,6 +105,24 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
         alpha = self.forward(Y)
         return np.sum(alpha[:, -1])
 
+    def BW_bis(self, Y_seq):
+        R = Y_seq.shape[0]
+        T = Y_seq.shape[1]
+        gamma_tot = np.zeros((R, self.N, T))
+        xsi_tot = np.zeros((R, self.N, self.N, T-1))
+        for r, Y in enumerate(Y_seq):  # TODO: virer cette boucle
+            alpha, beta = self.forward(Y), self.backward(Y)
+            gamma = alpha * beta
+            gamma /= np.sum(gamma, axis=0)
+            xsi = np.einsum("it,ij,jt,jt->ijt", alpha[:, :-1], self.A, beta[:, 1:], self.B[:, Y[1:]])
+            xsi /= np.sum(xsi, axis=(0, 1))
+            gamma_tot[r] = gamma
+            xsi_tot[r] = xsi
+        # TODO
+        self.pi = np.sum(gamma[:, 0], copy=True)
+        self.A = (np.sum(xsi, axis=-1).T / np.sum(gamma[:, :-1], axis=-1)).T
+        mask = np.tile(np.arange(self.M), (Y.shape[0], 1)).T == np.tile(Y, (self.M, 1))
+        self.B = (np.einsum("jt,it->ij", mask, gamma).T / np.sum(gamma, axis=-1)).T
 
 
     def Baum_welch_sequence(self, Y):  # Given a sample Y = (y1,....yL), what are the new parameters ?
@@ -195,7 +213,7 @@ for Y in Y_seq.T:
     logv += np.log(hmm.probability(Y))
 logvs += [logv]
 
-for i in range(50):
+for i in range(20):
     hmm.Baum_welch_sequence(Y_seq)
     logv = 0
     for Y in Y_seq.T:
