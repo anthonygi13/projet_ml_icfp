@@ -1,15 +1,8 @@
 import numpy as np
 
-def CoinToss(T):
+def CoinToss(T, pi=np.array([0.3, 0.7]), A=np.array([[0.6, 0.4], [0.1, 0.9]]), B=np.array([[0.3, 0.7], [0.5, 0.5]])):
     Y = np.zeros(T, dtype=int)
     X = np.zeros(T, dtype=int)
-    p = 0.3  # ☻proba of biased coin
-    pi = np.array([0.3, 0.7])  # proba of initial state
-    A = np.array([[0.6, 0.4], [0.1, 0.9]])
-    B = np.array([[p, 1-p], [0.5, 0.5]])
-
-
-    X = np.zeros(T,dtype=int)
 
     if (np.random.rand() < pi[0]):  # Init first coin toss
         X[0] = 0
@@ -35,8 +28,21 @@ def CoinToss(T):
 
     return X, Y
 
-"""
-CT = CoinToss(10)
-print(CT[0])
-print(CT[1])
-"""
+
+def generate_dataset(R, T, p0_pi, p0_biased, p_change, add2fname=''):
+    pi = np.array([p0_pi, 1-p0_pi])
+    A = np.array([[1-p_change, p_change], [p_change, 1-p_change]])
+    B = np.array([[0.5, 0.5], [p0_biased, 1-p0_biased]])
+
+    X_seq = np.zeros((R, T), dtype=int)
+    Y_seq = np.zeros((R, T), dtype=int)
+    for r in range(R):
+        X, Y = CoinToss(T, pi=pi, A=A, B=B)
+        X_seq[r, :] = X
+        Y_seq[r, :] = Y
+
+    np.savetxt('{}_X_p0pi={:.2f}_p0biased={:.2f}_pchange={:.2f}_R={}_T={}.txt'.format(add2fname, p0_pi, p0_biased, p_change, R, T), X_seq)
+    np.savetxt('{}_Y_p0pi={:.2f}_p0biased={:.2f}_pchange={:.2f}_R={}_T={}.txt'.format(add2fname, p0_pi, p0_biased, p_change, R, T), Y_seq)
+
+
+#generate_dataset(1000, 200, 0.9, 0.25, 0.1, 'dataset1')
