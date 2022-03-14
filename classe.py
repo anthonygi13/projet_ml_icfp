@@ -14,6 +14,10 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
         ##The parameters to optimize
         if pi is None and A is None and B is None:
             self.init_parameter()
+        else:
+            self.pi = pi
+            self.A = A
+            self.B = B
 
     def init_parameter(self):  # Take uniform everything as initial parameters
 
@@ -31,7 +35,7 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
         A=self.A 
         B=self.B 
         initial_probs = self.pi 
-        T = len(Y) 
+        T = len(y)
         T1 = np.empty((K, T), 'd') 
         T2 = np.empty((K, T), 'B') 
         T1[:, 0] = initial_probs * B[:, y[0]] 
@@ -100,8 +104,12 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
     def train(self, niter, Y_train, Y_test=None):
         print("Training...")
         logvs_train = [self.logv(Y_train)]
+        max_reached = False
         if Y_test is not None:
             logvs_test = [self.logv(Y_test)]
+            optimal_pi = None
+            optimal_A = None
+            optimal_B = None
         for i in range(niter):
             if i % 200 == 0 and i != 0:
                 print("Iteration {}/{}".format(i, niter))
@@ -109,11 +117,17 @@ class HMM:  # Hidden markov chain with unidimensional symbol with discrete distr
             logvs_train += [self.logv(Y_train)]
             if Y_test is not None:
                 logvs_test += [self.logv(Y_test)]
+                if logvs_test[-1] >= logvs_test[-2] and not max_reached:
+                    optimal_pi = np.array(self.pi, copy=True)
+                    optimal_A = np.array(self.A, copy=True)
+                    optimal_B = np.array(self.B, copy=True)
+                else:
+                    max_reached = True
         print("Training finished")
         if Y_test is None:
             return logvs_train
         else:
-            return logvs_train, logvs_test
+            return logvs_train, logvs_test, optimal_pi, optimal_A, optimal_B
 
 
 if __name__ == '__main__':
